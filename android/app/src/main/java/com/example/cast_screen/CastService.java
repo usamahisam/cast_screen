@@ -97,8 +97,8 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
     private MediaProjection.Callback call = new MediaProjection.Callback() {
         @Override
         public void onStop() {
+            destroy();
             super.onStop();
-            stopSelf();
         }
     };
 

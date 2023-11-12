@@ -16,6 +16,7 @@ class _MainAppState extends State<MainApp> {
   late CastScreen castScreen;
 
   bool startCast = false;
+  int woyo = 0;
 
   @override
   void initState() {
@@ -29,6 +30,10 @@ class _MainAppState extends State<MainApp> {
       } else if (v == "service_stop") {
         setState(() {
           startCast = false;
+        });
+      } else if (v == "result_buffer_image") {
+        setState(() {
+          woyo++;
         });
       }
     });
@@ -45,7 +50,7 @@ class _MainAppState extends State<MainApp> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text('Hello World!'),
+              Text('WOYO! $woyo'),
               ElevatedButton(
                 onPressed: () async {
                   if (!startCast) {
