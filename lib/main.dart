@@ -18,8 +18,10 @@ class _MainAppState extends State<MainApp> {
   bool startCast = false;
   int woyo = 0;
 
+  @pragma('vm:entry-point')
   @override
   void initState() {
+    WidgetsFlutterBinding.ensureInitialized();
     castScreen = CastScreen();
     checkCast();
     castScreen.serviceCallback((String v) {

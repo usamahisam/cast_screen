@@ -75,6 +75,7 @@ public class MainActivity extends FlutterActivity {
     }
 
     private void requestCastScreen() {
+        Toast.makeText(this, "STATUS: " + (castService != null), Toast.LENGTH_SHORT).show();
         if (!isRunService) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 MediaProjectionManager mediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
@@ -87,7 +88,7 @@ public class MainActivity extends FlutterActivity {
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void bindCS() {
         i = new Intent(this, CastService.class);
-        bindService(i, connection, Context.BIND_IMPORTANT);
+        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -114,6 +115,11 @@ public class MainActivity extends FlutterActivity {
     }
 
     private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onBindingDied(ComponentName name) {
+            ServiceConnection.super.onBindingDied(name);
+        }
+
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {

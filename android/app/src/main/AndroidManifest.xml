@@ -26,6 +26,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <activity android:name=".CastActivity"
+            android:exported="false"
+            android:hardwareAccelerated="true"/>
         <service
             android:name=".CastService"
             android:enabled="true"
