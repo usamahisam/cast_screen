@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ServiceInfo;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
@@ -17,9 +18,11 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
@@ -28,6 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -148,6 +152,7 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
 
     int pixelStride, rowStride, rowPadding;
     private CastCallback castCallback;
+    private TaskImage taskImage;
 
     public void registerCastCallback(CastCallback castCallback) {
         this.castCallback = castCallback;
@@ -165,19 +170,58 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
             rowPadding = rowStride - pixelStride * metrics.widthPixels;
             ByteBuffer buffer = plane.getBuffer();
             image.close();
+            ByteBuffer[] buffers = { buffer };
+            taskImage = new TaskImage();
+            taskImage.execute(buffers);
             if (castCallback != null) {
                 castCallback.onResultBufferImage(buffer);
             }
         }
     }
 
+    private class TaskImage extends AsyncTask<ByteBuffer, Void, Void> {
+        @Override
+        protected Void doInBackground(ByteBuffer... buffers) {
+//            try {
+//                Bitmap bitmap = Bitmap.createBitmap(metrics.widthPixels + rowPadding / pixelStride, metrics.heightPixels, Bitmap.Config.ARGB_8888);
+//                bitmap.copyPixelsFromBuffer(buffers[0]);
+//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                bitmap.compress(Bitmap.CompressFormat.PNG, 20, stream);
+//                String baseData = Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT);
+////                UserData.setScreenBase(CastService.this, Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT));
+//            } catch (Exception e) {
+//            }
+            return null;
+        }
+    }
+
     public void destroy() {
+        if (taskImage != null) {
+            try {
+                taskImage.cancel(true);
+            } catch (Exception e) {
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mediaProjection.unregisterCallback(call);
+        }
+        stopForeground(true);
         unregisterCastCallback();
         stopSelf();
     }
 
     @Override
     public void onDestroy() {
+        if (taskImage != null) {
+            try {
+                taskImage.cancel(true);
+            } catch (Exception e) {
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mediaProjection.unregisterCallback(call);
+        }
+        stopForeground(true);
         unregisterCastCallback();
         super.onDestroy();
     }

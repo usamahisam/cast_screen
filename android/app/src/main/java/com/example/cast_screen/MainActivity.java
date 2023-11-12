@@ -8,6 +8,8 @@ import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +29,7 @@ public class MainActivity extends FlutterActivity {
     private static final int PERMISSION_MEDIA_PROJECTION = 120;
     private boolean isRunService = false;
     private CastService castService;
+    private CastImageCallback castImageCallback;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -41,6 +44,7 @@ public class MainActivity extends FlutterActivity {
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
         methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
+        castImageCallback = new CastImageCallback(methodChannel);
         methodChannel.setMethodCallHandler((call, result) -> {
             if (call.method.equals("startService")) {
                 requestCastScreen();
@@ -68,6 +72,8 @@ public class MainActivity extends FlutterActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void startCastScreen(int resultCode, Intent data) {
+        i = new Intent(this, CastService.class);
+        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
         if (!isRunService) {
             i.setAction(CastService.ACTION_HANDLE_DATA);
             i.putExtra(CastService.EXTRA_DATA, data);
@@ -94,16 +100,29 @@ public class MainActivity extends FlutterActivity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             CastService.LocalBinder binder = (CastService.LocalBinder) service;
             castService = binder.getService();
-            castService.registerCastCallback(new CastImageCallback(methodChannel));
-            runOnUiThread(() -> methodChannel.invokeMethod("service_start", true));
+            castService.registerCastCallback(castImageCallback);
             isRunService = true;
+            invokeServiceStatus();
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            runOnUiThread(() -> methodChannel.invokeMethod("service_stop", true));
             isRunService = false;
+            invokeServiceStatus();
         }
     };
+
+    private boolean invokeStatus = false;
+
+    private void invokeServiceStatus() {
+        if (invokeStatus != isRunService) {
+            if (isRunService) {
+                runOnUiThread(() -> methodChannel.invokeMethod("service_start", true));
+            } else {
+                runOnUiThread(() -> methodChannel.invokeMethod("service_stop", true));
+            }
+        }
+        invokeStatus = isRunService;
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -127,7 +146,13 @@ public class MainActivity extends FlutterActivity {
 
         @Override
         public void onResultBufferImage(Buffer buffer) {
+            invokeServiceStatus();
             runOnUiThread(() -> methodChannel.invokeMethod("result_buffer_image", true));
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
