@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ServiceInfo;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
@@ -146,6 +147,15 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
     }
 
     int pixelStride, rowStride, rowPadding;
+    private CastCallback castCallback;
+
+    public void registerCastCallback(CastCallback castCallback) {
+        this.castCallback = castCallback;
+    }
+
+    public void unregisterCastCallback(CastCallback castCallback) {
+        this.castCallback = null;
+    }
 
     private void getImage(Image image) {
         if (image != null) {
@@ -155,8 +165,10 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
             rowPadding = rowStride - pixelStride * metrics.widthPixels;
             ByteBuffer buffer = plane.getBuffer();
             image.close();
-            ByteBuffer[] buffers = { buffer };
-            Log.d("CAST_SCREEN", buffer.toString());
+            if (castCallback != null) {
+                castCallback.onResultBufferImage(buffer);
+            }
+//            ByteBuffer[] buffers = { buffer };
         }
     }
 }

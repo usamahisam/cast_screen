@@ -17,11 +17,9 @@ class CastScreen {
     } catch (e) {}
   }
 
-  Future<void> handlePlatformChannelMethods(VoidCallback callback) async {
+  Future<void> serviceCallback(Function(String) callback) async {
     platform.setMethodCallHandler((methodCall) async {
-      print('NativeChanell background...');
-      print('>> ${methodCall.method}');
-      callback();
+      callback(methodCall.method);
     });
   }
 }

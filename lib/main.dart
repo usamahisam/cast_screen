@@ -18,7 +18,9 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     castScreen = CastScreen();
-    castScreen.handlePlatformChannelMethods(() {});
+    castScreen.serviceCallback((String v) {
+      print("Service callback $v");
+    });
     super.initState();
   }
 

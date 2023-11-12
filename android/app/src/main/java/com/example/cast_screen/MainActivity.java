@@ -11,6 +11,8 @@ import android.os.IBinder;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import java.nio.Buffer;
+
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
@@ -71,12 +73,13 @@ public class MainActivity extends FlutterActivity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             CastService.LocalBinder binder = (CastService.LocalBinder) service;
             castService = binder.getService();
-            runOnUiThread(() -> methodChannel.invokeMethod("onStartService", true));
+            castService.registerCastCallback(new CastImageCallback(methodChannel));
+            runOnUiThread(() -> methodChannel.invokeMethod("service_start", true));
             isRunService = true;
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            runOnUiThread(() -> methodChannel.invokeMethod("onStopService", true));
+            runOnUiThread(() -> methodChannel.invokeMethod("service_stop", true));
             isRunService = false;
         }
     };
@@ -91,5 +94,19 @@ public class MainActivity extends FlutterActivity {
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    class CastImageCallback implements CastCallback {
+
+        private MethodChannel methodChannel;
+
+        public CastImageCallback(MethodChannel methodChannel) {
+            this.methodChannel = methodChannel;
+        }
+
+        @Override
+        public void onResultBufferImage(Buffer buffer) {
+            runOnUiThread(() -> methodChannel.invokeMethod("result_buffer_image", buffer));
+        }
     }
 }
