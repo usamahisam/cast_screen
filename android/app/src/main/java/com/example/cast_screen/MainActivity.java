@@ -106,7 +106,7 @@ public class MainActivity extends FlutterActivity {
 
         @Override
         public void onResultBufferImage(Buffer buffer) {
-            runOnUiThread(() -> methodChannel.invokeMethod("result_buffer_image", buffer));
+            runOnUiThread(() -> methodChannel.invokeMethod("result_buffer_image", true));
         }
     }
 }

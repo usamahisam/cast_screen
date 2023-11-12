@@ -168,7 +168,6 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
             if (castCallback != null) {
                 castCallback.onResultBufferImage(buffer);
             }
-//            ByteBuffer[] buffers = { buffer };
         }
     }
 }
