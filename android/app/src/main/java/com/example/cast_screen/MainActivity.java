@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import java.nio.Buffer;
@@ -19,11 +21,20 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity {
 
+    private Intent i;
     private static final String CHANNEL = "com.example.cast_screen";
     private MethodChannel methodChannel;
     private static final int PERMISSION_MEDIA_PROJECTION = 120;
     private boolean isRunService = false;
     private CastService castService;
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        i = new Intent(this, CastService.class);
+        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -57,8 +68,6 @@ public class MainActivity extends FlutterActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void startCastScreen(int resultCode, Intent data) {
-        Intent i = new Intent(this, CastService.class);
-        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
         if (!isRunService) {
             i.setAction(CastService.ACTION_HANDLE_DATA);
             i.putExtra(CastService.EXTRA_DATA, data);
@@ -74,6 +83,7 @@ public class MainActivity extends FlutterActivity {
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void stopCastScreen() {
         if (isRunService) {
+            isRunService = false;
             castService.destroy();
         }
     }
