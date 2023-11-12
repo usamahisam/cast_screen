@@ -10,6 +10,13 @@ class CastScreen {
     } catch (e) {}
   }
 
+  Future<void> stopService() async {
+    try {
+      await platform.invokeMethod("stopService");
+      // ignore: empty_catches
+    } catch (e) {}
+  }
+
   Future<void> checkService() async {
     try {
       await platform.invokeMethod("checkService");

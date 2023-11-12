@@ -153,7 +153,7 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
         this.castCallback = castCallback;
     }
 
-    public void unregisterCastCallback(CastCallback castCallback) {
+    public void unregisterCastCallback() {
         this.castCallback = null;
     }
 
@@ -169,5 +169,16 @@ public class CastService extends Service implements ImageReader.OnImageAvailable
                 castCallback.onResultBufferImage(buffer);
             }
         }
+    }
+
+    public void destroy() {
+        unregisterCastCallback();
+        stopSelf();
+    }
+
+    @Override
+    public void onDestroy() {
+        unregisterCastCallback();
+        super.onDestroy();
     }
 }

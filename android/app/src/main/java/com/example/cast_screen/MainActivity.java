@@ -25,6 +25,7 @@ public class MainActivity extends FlutterActivity {
     private boolean isRunService = false;
     private CastService castService;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
@@ -32,6 +33,9 @@ public class MainActivity extends FlutterActivity {
         methodChannel.setMethodCallHandler((call, result) -> {
             if (call.method.equals("startService")) {
                 requestCastScreen();
+                result.success(true);
+            } else if (call.method.equals("stopService")) {
+                stopCastScreen();
                 result.success(true);
             } else if (call.method.equals("checkService")) {
                 result.success(isRunService);
@@ -64,6 +68,13 @@ public class MainActivity extends FlutterActivity {
             } else {
                 startService(i);
             }
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void stopCastScreen() {
+        if (isRunService) {
+            castService.destroy();
         }
     }
 

@@ -15,11 +15,22 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   late CastScreen castScreen;
 
+  bool startCast = false;
+
   @override
   void initState() {
     castScreen = CastScreen();
     castScreen.serviceCallback((String v) {
       print("Service callback $v");
+      if (v == "service_start") {
+        setState(() {
+          startCast = true;
+        });
+      } else if (v == "service_stop") {
+        setState(() {
+          startCast = false;
+        });
+      }
     });
     super.initState();
   }
@@ -37,9 +48,13 @@ class _MainAppState extends State<MainApp> {
               const Text('Hello World!'),
               ElevatedButton(
                 onPressed: () async {
-                  await castScreen.startService();
+                  if (!startCast) {
+                    await castScreen.startService();
+                  } else {
+                    await castScreen.stopService();
+                  }
                 },
-                child: const Text("WOI"),
+                child: !startCast ? const Text("START") : const Text("STOP"),
               ),
             ],
           ),
