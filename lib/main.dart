@@ -21,6 +21,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     castScreen = CastScreen();
+    checkCast();
     castScreen.serviceCallback((String v) {
       print("Service callback $v");
       if (v == "service_start") {
@@ -38,6 +39,13 @@ class _MainAppState extends State<MainApp> {
       }
     });
     super.initState();
+  }
+
+  Future<void> checkCast() async {
+    bool a = await castScreen.checkService();
+    setState(() {
+      startCast = a;
+    });
   }
 
   @override

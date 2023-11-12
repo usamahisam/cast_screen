@@ -17,11 +17,13 @@ class CastScreen {
     } catch (e) {}
   }
 
-  Future<void> checkService() async {
+  Future<bool> checkService() async {
     try {
-      await platform.invokeMethod("checkService");
+      return await platform.invokeMethod("checkService");
       // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> serviceCallback(Function(String) callback) async {

@@ -33,28 +33,23 @@ public class MainActivity extends FlutterActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
+    protected void onStart() {
+        super.onStart();
+        bindCS();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        i = new Intent(this, CastService.class);
-        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
-        if (isRunService) {
-            runOnUiThread(() -> methodChannel.invokeMethod("service_start", true));
-        } else {
-            runOnUiThread(() -> methodChannel.invokeMethod("service_stop", true));
-        }
+        bindCS();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onResume() {
         super.onResume();
-        i = new Intent(this, CastService.class);
-        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
-        if (isRunService) {
-            runOnUiThread(() -> methodChannel.invokeMethod("service_start", true));
-        } else {
-            runOnUiThread(() -> methodChannel.invokeMethod("service_stop", true));
-        }
+        bindCS();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -63,13 +58,6 @@ public class MainActivity extends FlutterActivity {
         super.configureFlutterEngine(flutterEngine);
         methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
         castImageCallback = new CastImageCallback(methodChannel);
-        i = new Intent(this, CastService.class);
-        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
-        if (isRunService) {
-            runOnUiThread(() -> methodChannel.invokeMethod("service_start", true));
-        } else {
-            runOnUiThread(() -> methodChannel.invokeMethod("service_stop", true));
-        }
         methodChannel.setMethodCallHandler((call, result) -> {
             if (call.method.equals("startService")) {
                 requestCastScreen();
@@ -83,6 +71,7 @@ public class MainActivity extends FlutterActivity {
                 result.notImplemented();
             }
         });
+        bindCS();
     }
 
     private void requestCastScreen() {
@@ -96,9 +85,14 @@ public class MainActivity extends FlutterActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private void startCastScreen(int resultCode, Intent data) {
+    private void bindCS() {
         i = new Intent(this, CastService.class);
-        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
+        bindService(i, connection, Context.BIND_IMPORTANT);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void startCastScreen(int resultCode, Intent data) {
+        bindCS();
         if (!isRunService) {
             i.setAction(CastService.ACTION_HANDLE_DATA);
             i.putExtra(CastService.EXTRA_DATA, data);
