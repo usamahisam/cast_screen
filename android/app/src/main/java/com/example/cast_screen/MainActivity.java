@@ -41,10 +41,20 @@ public class MainActivity extends FlutterActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
+    protected void onResume() {
+        super.onResume();
+        i = new Intent(this, CastService.class);
+        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
         methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
         castImageCallback = new CastImageCallback(methodChannel);
+        i = new Intent(this, CastService.class);
+        bindService(i, connection, Context.BIND_ABOVE_CLIENT);
         methodChannel.setMethodCallHandler((call, result) -> {
             if (call.method.equals("startService")) {
                 requestCastScreen();
